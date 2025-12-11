@@ -7,7 +7,7 @@
     <title>AquaVista Inventory</title>
     <meta name="description" content="Simple and clean inventory management system for tracking products">
 
-    <!-- Icon Library -->
+    <!-- Icons -->
     <link rel="stylesheet" href="assets/icons/uicons-regular-rounded/css/uicons-regular-rounded.css" />
 
     <!-- Styles -->
@@ -26,10 +26,10 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <main class="main-content">
         <div class="container">
-            <!-- Product Form -->
+            <!-- Form -->
             <section class="form-card">
                 <h2>Add New Product</h2>
                 <form id="productForm">
@@ -72,7 +72,38 @@
                 </form>
             </section>
 
-            <!-- Inventory Table -->
+            <!-- Summary Dashboard -->
+            <section class="dashboard">
+                <div class="dashboard-card">
+                    <div class="dashboard-icon">
+                        <i class="fi fi-rr-box"></i>
+                    </div>
+                    <div class="dashboard-info">
+                        <h3 id="totalProducts">0</h3>
+                        <p>Total Products</p>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-icon">
+                        <i class="fi fi-rr-coins"></i>
+                    </div>
+                    <div class="dashboard-info">
+                        <h3 id="totalValue">MWK 0</h3>
+                        <p>Total Value</p>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-icon warning">
+                        <i class="fi fi-rr-exclamation"></i>
+                    </div>
+                    <div class="dashboard-info">
+                        <h3 id="lowStockCount">0</h3>
+                        <p>Low Stock Items</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Table -->
             <section class="table-card">
                 <div class="table-header">
                     <h2>Inventory List</h2>
@@ -104,12 +135,62 @@
                     </table>
                     <div id="emptyState" class="empty-state">
                         <i class="fi fi-rr-box"></i>
-                        <p>No products yet. Add your first product above.</p>
+                        <p>Your inventory is empty. Add your first product.</p>
                     </div>
                 </div>
             </section>
         </div>
     </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Product</h2>
+                <button class="modal-close" onclick="closeEditModal()">
+                    <i class="fi fi-rr-cross"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editProductName">Product Name</label>
+                    <input type="text" id="editProductName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCategory">Category</label>
+                    <select id="editCategory" required>
+                        <option value="">Select a category</option>
+                        <option value="Food & Drinks">Food & Drinks</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Household Items">Household Items</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Beauty & Health">Beauty & Health</option>
+                        <option value="Cleaning Supplies">Cleaning Supplies</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editPrice">Price (MWK)</label>
+                    <input type="number" id="editPrice" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="editQuantity">Quantity</label>
+                    <input type="number" id="editQuantity" min="0" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveModalEdit()">
+                    <i class="fi fi-rr-check"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Script -->
     <script src="script.js"></script>

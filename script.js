@@ -1,10 +1,7 @@
-// ========================================
-// Inventory Management System
-// ========================================
-
-// Store products with localStorage persistence
+// Product data
 let products = [];
 let productIdCounter = 1;
+let currentEditId = null;
 const STORAGE_KEY = 'aquavista_products';
 const COUNTER_KEY = 'aquavista_counter';
 
@@ -14,11 +11,10 @@ const tableBody = document.getElementById('tableBody');
 const emptyState = document.getElementById('emptyState');
 const searchInput = document.getElementById('searchInput');
 const sortBySelect = document.getElementById('sortBy');
+const editModal = document.getElementById('editModal');
+const toastContainer = document.getElementById('toastContainer');
 
-// ========================================
-// LocalStorage Functions
-// ========================================
-
+// Save and load from localStorage
 function saveToLocalStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
     localStorage.setItem(COUNTER_KEY, productIdCounter.toString());
@@ -37,27 +33,17 @@ function loadFromLocalStorage() {
     }
 }
 
-// ========================================
-// Initialize App
-// ========================================
-
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Load saved data from localStorage
     loadFromLocalStorage();
-
-    // Set up event listeners
     productForm.addEventListener('submit', handleAddProduct);
     searchInput.addEventListener('input', handleSearch);
     sortBySelect.addEventListener('change', handleSort);
-
-    // Display loaded products
     updateTable();
+    updateDashboard();
 });
 
-// ========================================
-// Add Product
-// ========================================
-
+// Add new product
 function handleAddProduct(e) {
     e.preventDefault();
 
@@ -69,12 +55,12 @@ function handleAddProduct(e) {
 
     // Basic validation
     if (!productName || !category) {
-        alert('Please fill in all fields');
+        showToast('Please fill in all fields', 'error');
         return;
     }
 
     if (price < 0 || quantity < 0) {
-        alert('Price and quantity must be positive numbers');
+        showToast('Price and quantity must be positive numbers', 'error');
         return;
     }
 
@@ -99,51 +85,116 @@ function handleAddProduct(e) {
     // Reset sort dropdown
     sortBySelect.value = 'none';
 
-    // Update table
+    // Show success toast
+    showToast('Product added successfully!', 'success');
+
+    // Update table and dashboard
     updateTable();
+    updateDashboard();
 }
 
-// ========================================
-// Delete Product
-// ========================================
-
+// Delete product
 function deleteProduct(id) {
-    // Remove product from array
-    products = products.filter(product => product.id !== id);
+    const row = document.querySelector(`tr[data-id="${id}"]`);
 
-    // Save to localStorage
-    saveToLocalStorage();
+    if (row) {
+        // Add fade-out animation
+        row.classList.add('fade-out');
 
-    // Update table
-    updateTable();
+        // Wait for animation to complete before removing
+        setTimeout(() => {
+            // Remove product from array
+            products = products.filter(product => product.id !== id);
+
+            // Save to localStorage
+            saveToLocalStorage();
+
+            // Show success toast
+            showToast('Product deleted successfully!', 'error');
+
+            // Update table and dashboard
+            updateTable();
+            updateDashboard();
+        }, 400);
+    }
 }
 
-// ========================================
-// Edit Product (Placeholder)
-// ========================================
-
+// Edit product - opens modal
 function editProduct(id) {
     const product = products.find(p => p.id === id);
 
     if (product) {
-        // Fill form with product data
-        document.getElementById('productName').value = product.name;
-        document.getElementById('category').value = product.category;
-        document.getElementById('price').value = product.price;
-        document.getElementById('quantity').value = product.quantity;
+        currentEditId = id;
 
-        // Delete the old entry
-        deleteProduct(id);
+        // Fill modal form with product data
+        document.getElementById('editProductName').value = product.name;
+        document.getElementById('editCategory').value = product.category;
+        document.getElementById('editPrice').value = product.price;
+        document.getElementById('editQuantity').value = product.quantity;
 
-        // Scroll to form
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Open modal
+        editModal.classList.add('active');
     }
 }
 
-// ========================================
-// Format Currency
-// ========================================
+// Close edit modal
+function closeEditModal() {
+    editModal.classList.remove('active');
+    currentEditId = null;
+}
 
+// Save modal edit
+function saveModalEdit() {
+    if (currentEditId === null) return;
+
+    // Get modal form values
+    const productName = document.getElementById('editProductName').value.trim();
+    const category = document.getElementById('editCategory').value.trim();
+    const price = parseFloat(document.getElementById('editPrice').value);
+    const quantity = parseInt(document.getElementById('editQuantity').value);
+
+    // Basic validation
+    if (!productName || !category) {
+        showToast('Please fill in all fields', 'error');
+        return;
+    }
+
+    if (price < 0 || quantity < 0) {
+        showToast('Price and quantity must be positive numbers', 'error');
+        return;
+    }
+
+    // Find and update product
+    const productIndex = products.findIndex(p => p.id === currentEditId);
+    if (productIndex !== -1) {
+        products[productIndex].name = productName;
+        products[productIndex].category = category;
+        products[productIndex].price = price;
+        products[productIndex].quantity = quantity;
+
+        // Save to localStorage
+        saveToLocalStorage();
+
+        // Show success toast
+        showToast('Product updated successfully!', 'info');
+
+        // Update table and dashboard
+        updateTable();
+        updateDashboard();
+
+        // Close modal
+        closeEditModal();
+    }
+}
+
+// Close modal when clicking outside
+editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) {
+        closeEditModal();
+    }
+});
+
+// Format currency
 function formatCurrency(amount) {
     return 'MWK ' + amount.toLocaleString('en-US', {
         minimumFractionDigits: 0,
@@ -151,10 +202,14 @@ function formatCurrency(amount) {
     });
 }
 
-// ========================================
-// Update Table
-// ========================================
+// Get stock badge class
+function getStockBadgeClass(quantity) {
+    if (quantity <= 3) return 'stock-low';
+    if (quantity <= 10) return 'stock-medium';
+    return 'stock-healthy';
+}
 
+// Update table display
 function updateTable(filteredProducts = null) {
     const productsToDisplay = filteredProducts || products;
 
@@ -172,12 +227,16 @@ function updateTable(filteredProducts = null) {
     // Add rows
     productsToDisplay.forEach(product => {
         const row = document.createElement('tr');
+        row.setAttribute('data-id', product.id);
+        row.classList.add('fade-in');
+
+        const stockBadgeClass = getStockBadgeClass(product.quantity);
 
         row.innerHTML = `
             <td>${product.name}</td>
             <td>${product.category}</td>
             <td>${formatCurrency(product.price)}</td>
-            <td>${product.quantity}</td>
+            <td><span class="stock-badge ${stockBadgeClass}">${product.quantity}</span></td>
             <td>
                 <div class="action-icons">
                     <button class="action-btn edit" onclick="editProduct(${product.id})" title="Edit">
@@ -194,10 +253,22 @@ function updateTable(filteredProducts = null) {
     });
 }
 
-// ========================================
-// Search Functionality
-// ========================================
+// Update dashboard
+function updateDashboard() {
+    // Total products
+    const totalProducts = products.length;
+    document.getElementById('totalProducts').textContent = totalProducts;
 
+    // Total inventory value
+    const totalValue = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
+    document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+
+    // Low stock count (quantity <= 3)
+    const lowStockCount = products.filter(product => product.quantity <= 3).length;
+    document.getElementById('lowStockCount').textContent = lowStockCount;
+}
+
+// Search functionality
 function handleSearch(e) {
     const searchTerm = e.target.value.toLowerCase().trim();
 
@@ -215,10 +286,7 @@ function handleSearch(e) {
     updateTable(filtered);
 }
 
-// ========================================
-// Sort Functionality
-// ========================================
-
+// Sort functionality
 function handleSort() {
     const sortBy = sortBySelect.value;
     let sortedProducts = [...products];
@@ -243,4 +311,30 @@ function handleSort() {
     }
 
     updateTable(sortedProducts);
+}
+
+// Toast notification system
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    // Icon based on type
+    let icon = 'fi-rr-info';
+    if (type === 'success') icon = 'fi-rr-check';
+    if (type === 'error') icon = 'fi-rr-cross';
+
+    toast.innerHTML = `
+        <i class="fi ${icon}"></i>
+        <span class="toast-message">${message}</span>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3000);
 }
