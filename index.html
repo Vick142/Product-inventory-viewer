@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaVista Inventory</title>
+    <meta name="description" content="Simple and clean inventory management system for tracking products">
+    
+    <!-- Icon Library -->
+    <link rel="stylesheet" href="assets/icons/uicons-regular-rounded/css/uicons-regular-rounded.css" />
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">AquaVista Inventory</h1>
+            <div class="search-wrapper">
+                <i class="fi fi-rr-search"></i>
+                <input type="text" id="searchInput" placeholder="Search products..." class="search-input">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Product Form -->
+            <section class="form-card">
+                <h2>Add New Product</h2>
+                <form id="productForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="productName">Product Name</label>
+                            <input type="text" id="productName" placeholder="Enter product name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <input type="text" id="category" placeholder="Enter category" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="price">Price (MWK)</label>
+                            <input type="number" id="price" placeholder="0" min="0" step="0.01" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" id="quantity" placeholder="0" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fi fi-rr-plus"></i>
+                        Add Product
+                    </button>
+                </form>
+            </section>
+
+            <!-- Inventory Table -->
+            <section class="table-card">
+                <h2>Inventory List</h2>
+                <div class="table-wrapper">
+                    <table id="inventoryTable">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Products will be inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="empty-state">
+                        <i class="fi fi-rr-box"></i>
+                        <p>No products yet. Add your first product above.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Script -->
+    <script src="script.js"></script>
+</body>
+</html>
