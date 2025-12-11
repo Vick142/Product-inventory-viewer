@@ -76,7 +76,4 @@ The `updateTable()` function is responsible for showing data:
 - **Search**: Filters the `products` array to find items that match the typed text, then runs `updateTable` with only those results.
 - **Sort**: Reorders the `products` array based on the selected option (e.g., lowest price to highest price) and refreshes the table.
 
-## How to Run
-1. Make sure `index.html`, `style.css`, and `script.js` are in the same folder.
-2. Open `index.html` in any web browser (Chrome, Firefox, Edge, etc.).
-3. The application will start immediately. No server or installation is needed.
+
